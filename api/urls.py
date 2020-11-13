@@ -7,7 +7,12 @@ router = DefaultRouter()
 
 
 router.register(r'ingredients', IngredientListView)
-router.register(r'purchases', ShoppingListView)
-router.register(r'recipeingredient', RecipeIngredientView)
+#router.register(r'purchases', ShoppingListView)
+#router.register(r'recipeingredient', RecipeIngredientView)
 
 urlpatterns = router.urls
+
+urlpatterns = [
+    path('', include(router.urls)),
+    path('purshases/', ShoppingListView.as_view(), name='purshases'),
+]
