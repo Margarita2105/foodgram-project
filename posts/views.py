@@ -134,8 +134,8 @@ def post_edit(request, username, recipe_id):
             recipe.save()
             for item in ingredients:
                 RecipeIngredient.objects.create(
-                    units=ingredients[item],
-                    ingredient=Ingredients.objects.get(name=f'{item}'),
+                    qty=ingredients[item],
+                    ingredient=Ingredient.objects.get(title=f'{item}'),
                     recipe=recipe)
             form.save_m2m()
             return redirect('index')
@@ -224,8 +224,11 @@ def shoplist(request):
     return inglist  
 
 def shoppinglist(request):
-    shop = ShoppingList.objects.select_related('recipe').filter(user=request.user.username)
-    return render(request, {'shop': shop})
+    shop = ShoppingList.objects.select_related('recipe').filter(user=request.user.id)
+    paginator = Paginator(shop, 10)
+    page_number = request.GET.get("page")
+    page = paginator.get_page(page_number)
+    return render(request, 'shoplist1.html', {"page": page, "paginator": paginator,})
 
 
 

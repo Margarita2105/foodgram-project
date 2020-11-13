@@ -16,8 +16,8 @@ def is_favorite(post, user):
 
 
 @register.filter(name='is_shop')
-def is_shop(post, user):
-    return ShoppingList.objects.filter(user=user, post=post).exists()
+def is_shop(recipe, user):
+    return ShoppingList.objects.filter(user=user, recipe=recipe).exists()
 
 
 @register.filter(name='get_filter_values')
