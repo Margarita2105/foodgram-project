@@ -14,6 +14,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    recipe = serializers.StringRelatedField()
     class Meta:
         fields = ('user', 'recipe',)
         model = ShoppingList

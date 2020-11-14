@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'sorl.thumbnail',
     'rest_framework',
     'django_filters',
+
 ]
 
 MIDDLEWARE = [
@@ -135,6 +136,9 @@ REST_FRAMEWORK = {
         'DEFAULT_FILTER_BACKENDS': [
             'django_filters.rest_framework.DjangoFilterBackend'
         ],
+        'AUTHENTICATION_BACKENDS': [
+            'django.contrib.auth.backends.RemoteUserBackend'
+        ],
 #        'DEFAULT_PERMISSION_CLASSES': [
 #            'rest_framework.permissions.IsAuthenticated', 
 #        ],
@@ -142,4 +146,3 @@ REST_FRAMEWORK = {
 
 LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "index" 
-# LOGOUT_REDIRECT_URL = "index" 
