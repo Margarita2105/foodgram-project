@@ -19,11 +19,11 @@ class IngredientListView(mixins.ListModelMixin, viewsets.GenericViewSet):
     ordering_fields = ['title',]
 
 
-class ShoppingListView(generics.ListCreateAPIView):
+class ShoppingListView(generics.ListCreateAPIView, viewsets.GenericViewSet):
     queryset = ShoppingList.objects.all()
     serializer_class = ShoppingListSerializer
  
 
-class RecipeIngredientView(generics.ListCreateAPIView):
+class RecipeIngredientView(generics.ListCreateAPIView, viewsets.GenericViewSet):
     queryset = RecipeIngredient.objects.all()
     serializer_class = RecipeIngredientSerializer
