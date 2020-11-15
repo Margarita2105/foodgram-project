@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, decorators
 # Create your views here.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -223,11 +223,11 @@ def shoplist(request):
     print(inglist)
     return inglist  
 
+@decorators.login_required
 def shoppinglist(request):
-    #shop = ShoppingList.objects.filter(purchases=request.recipe)
+    shop = ShoppingList.objects.filter(user=request.user)
     
-    shop = Recipe.objects.filter(shoppinglist_user__pk=request.user.id)
-    print(shop)
+    #shop = Recipe.objects.filter(purchases=request.recipe)
     #paginator = Paginator(shop, 10)
     #page_number = request.GET.get("page")
     #page = paginator.get_page(page_number)
