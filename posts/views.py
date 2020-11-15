@@ -224,11 +224,14 @@ def shoplist(request):
     return inglist  
 
 def shoppinglist(request):
-    shop = ShoppingList.objects.select_related('recipe').filter(user=request.user.id)
-    paginator = Paginator(shop, 10)
-    page_number = request.GET.get("page")
-    page = paginator.get_page(page_number)
-    return render(request, 'shoplist1.html', {"page": page, "paginator": paginator,})
+    #shop = ShoppingList.objects.filter(purchases=request.recipe)
+    
+    shop = Recipe.objects.filter(shoppinglist_user__pk=request.user.id)
+    print(shop)
+    #paginator = Paginator(shop, 10)
+    #page_number = request.GET.get("page")
+    #page = paginator.get_page(page_number)
+    return render(request, 'shoplist1.html', {"shop": shop})
 
 
 

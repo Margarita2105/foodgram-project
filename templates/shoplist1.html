@@ -1,64 +1,43 @@
 {% extends "base.html" %}
+
 {% load user_filters %}
 {% block title %}Рецепты{% endblock %}
 {% load static %}
 {% block static %}
     <link rel="stylesheet" href="{% static '/pages/shopList.css' %}">
 {% endblock %}
+
 {% csrf_token %}
+{% block content %}
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Список покупок</title>
-    <link rel="stylesheet" href="./pages/shopList.css">
-</head>
+
 <body class="body">
-<header class="header">
-    <nav class="nav">
-        <div class="nav__container container">
-            <ul class="nav__items list">
-                <li class="nav__item"><a href="#" class="nav__link link">Рецепты</a></li>
-                <li class="nav__item"><a href="#" class="nav__link link">Мои подписки</a></li>
-                <li class="nav__item"><a href="#" class="nav__link link">Создать рецепт</a></li>
-                <li class="nav__item"><a href="#" class="nav__link link">Избранное</a></li>
-                <li class="nav__item nav__item_active"><a href="#" class="nav__link link">Список покупок</a><span class="badge badge_style_blue nav__badge" id="counter">4</span></li>
-            </ul>
-            <ul class="nav__items list">
-                <li class="nav__item"><a href="#" class="nav__link link">Изменить пароль</a></li>
-                <li class="nav__item"><a href="#" class="nav__link link">Выход</a></li>
-            </ul>
-        </div>
-    </nav>
-</header>
+
 <main class="main container">
     <div class="main__header">
         <h1 class="main__title">Список покупок</h1>
-
-    {% for recipe in page %}
-        {% include "recipe.html" with recipe=recipe %}
-    {% endfor %}
+        
+    
+       
     </div>
     <div class="card-list card-list_column">
         <ul class="shopping-list">
             <li class="shopping-list__item" data-id="111">
                 <div class="recipe recipe_reverse">
-                    <img src="./images/testCardImg.png" alt="какой-то текст" class="recipe__image recipe__image_big">
-                    <h3 class="recipe__title">Французские тосты</h3>
-                    <p class="recipe__text"><span class="icon-time"></span> 20 мин.</p>
-                </div>
-                <a href="#" class="shopping-list__button link">Удалить</a>
-            </li>
-            <li class="shopping-list__item" data-id="1112">
-                <div class="recipe recipe_reverse">
-                    <img src="./images/testCardImg.png" alt="какой-то текст" class="recipe__image recipe__image_big">
-                    <h3 class="recipe__title">Французские тосты</h3>
-                    <p class="recipe__text"><span class="icon-time"></span> 20 мин.</p>
-                </div>
-                <a href="#" class="shopping-list__button link">Удалить</a>
+                    {% for recipe in shop %}
+                    {% load thumbnail %}
+                    <li class="shopping-list__item" data-id="{{ recipe.pk }}">
+                        <div class="recipe recipe_reverse">
+                            {% thumbnail recipe.image "250x250" crop="center" upscale=True as im %}
+                            <a href="{% url 'recipe' recipe.author.username recipe.id %}" class="link"><img src="{{ im.url }}" alt="какой-то текст" class="recipe__image recipe__image_big"></a>
+                            {% endthumbnail %}
+                            <a href="{% url 'recipe' recipe.author.username recipe.id %}" class="link"><h3 class="recipe__title">{{ recipe.title }}</h3></a>
+                            <p class="recipe__text"><span class="icon-time"></span>{{ recipe.cooking_time }} мин. </p>
+                        </div>
+                        <a href="#" class="shopping-list__button link"> Удалить </a>
+                    </li>
+                {% endfor %}   >
             </li>
             <li class="shopping-list__item" data-id="1113">
                 <div class="recipe recipe_reverse">
@@ -83,3 +62,4 @@
 
 </body>
 </html>
+{% endblock %}
