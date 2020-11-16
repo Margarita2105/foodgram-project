@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 
 from .forms import RecipeForm
 from .models import Ingredient, Recipe, RecipeIngredient, ShoppingList, Follow_User, Follow_Recipe
-from .utils import IngredientsValid
+from .utils import IngredientsValid, food_time_f
 
 User = get_user_model()
 
@@ -32,16 +32,11 @@ def index(request):
     food_time = request.GET.get('filter')
     if food_time in food:
         food[food_time] = (True,)
-    
     recipes = Recipe.objects.select_related('author').order_by('-pub_date').all()
-
     recipe_list = recipes.filter(
         breakfest__in=food['breakfest'],
         lunch__in=food['lunch'],
         dinner__in=food['dinner'])
-
-    
-
     paginator = Paginator(recipe_list, 10) 
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -100,7 +95,8 @@ def profile(request, username):
         food[food_time] = (True,)
   
     post_author = get_object_or_404(User, username=username)
-    profile_recipe = Recipe.objects.filter(author=post_author).order_by("-pub_date").all()
+    profile_recipe = Recipe.objects.select_related(
+        'author').filter(author_id=post_author.pk)
     recipe_list = profile_recipe.filter(
         breakfest__in=food['breakfest'],
         lunch__in=food['lunch'],
@@ -109,11 +105,6 @@ def profile(request, username):
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(request,"profile.html", {"post_author": post_author, "paginator": paginator,"page": page, 'food_time':food_time}) 
-
-def recipe_profile(request, recipe):
-    recipe = RecipeIngredient.objects.filter(recipe=recipe)
-    return render(request,"profile.html", {'recipe': recipe})
-
 
 
 @login_required
@@ -146,7 +137,23 @@ def post_edit(request, username, recipe_id):
     return render(request, 'new.html',
                   {'form': form, 'recipe': recipe, })
 
-    
+
+@login_required
+def recipe_delete(request, username, recipe_id):
+    recipe = get_object_or_404(
+        Recipe, author__username=username, pk=recipe_id)
+
+    if request.method == 'POST':
+        if recipe.author == request.user or request.user.is_superuser:
+            recipe.delete()
+        return redirect('index')
+    else:
+        return render(request, 'DelRecipe.html', {
+            'recipe_id': recipe_id,
+            'username': username,
+            'recipe_obj': recipe_obj})
+
+
 def page_not_found(request, exception):
     return render(request, "misc/404.html", {"path": request.path}, status=404)
 
@@ -168,14 +175,17 @@ def follow_index(request):
 
 @login_required
 def follow_recipe_index(request):
+    
     follow_recipe = Follow_Recipe.objects.filter(user=request.user).values_list("recipe_id", flat=True)
     count = Follow_Recipe.objects.filter(user=request.user).count()
-    recipe_list = Recipe.objects.filter(recipe_id__in=follow_recipe).order_by("-pub_date").all()
-    paginator = Paginator(recipe_list, 10)
+    recipe_list = Recipe.objects.filter(id__in=follow_recipe).order_by("-pub_date").all()
+    recipe, food_time = food_time_f(request, recipe_list)
+    paginator = Paginator(recipe, 10)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
-    return render(request, "follow.html", {"page": page, "paginator": paginator, "count": count})
-  
+    return render(request, "follow.html", {"page": page, "paginator": paginator, "count": count, "food_time": food_time})
+
+
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)

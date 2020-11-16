@@ -9,7 +9,7 @@ urlpatterns = [
     path('load_from_json/', views.ingredients),
     path('recipes/<username>/<int:recipe_id>/edit/', views.post_edit, name='post_edit'),
     path('recipes/<username>/<int:recipe_id>/', views.recipe_view, name='recipe'),
-    
+    path('follows/', views.follow_index, name='profile_follow'),
     path('favorite/', views.follow_recipe_index, name='favorite_list'),
-    path("<username>/follow/", views.follow_index, name="profile_follow"), 
+    #path("<username>/follow/", views.follow_index, name="profile_follow"), 
 ]

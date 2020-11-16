@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} Удаление рецепта {% endblock %}
+{% block static %}
+    <link rel="stylesheet" href="{% static "/pages/index.css" %}">
+{% endblock %}
+{% block nav %}
+    {% include "nav.html"%}
+{% endblock %}
+{% block content %}
+<div class="custom-center-block">
+    <p class="custom-text-block"> Удалить рецепт {{ recipe_obj }} ? </p>
+    <div class="custom-button-block">
+        <form method="post" action="{% url 'recipe_delete' username recipe_obj.pk %}">
+            {% csrf_token %}
+            <button class="button button_style_light-blue"> Удалить </button>
+        </form>
+        <form action="{% url 'recipe' username recipe_obj.pk %}" >
+            <button class="button button_style_blue"> Отмена </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

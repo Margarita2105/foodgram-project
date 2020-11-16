@@ -51,9 +51,10 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
             <p class="card__text">публикаций: {{ recipe_count }}</p>
              <p class="card__text">подписчиков: {{ followers_count }}</p>
             <p></p>
+            {% csrf_token %}
         {% if user.is_authenticated and not user == author%}    
             {% if author|is_follow:user %}
-            {% csrf_token %}
+            
                 <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe">Отписаться от автора</button></p>
             {% else %}
                 <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></p>
@@ -72,6 +73,7 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
 
   <script src="{% static 'js/components/Purchases.js' %}"></script>
   <script src="{% static 'js/components/Favorites.js' %}"></script>
+  <script src="{% static 'js/components/Subscribe.js' %}"></script>
 
   <script src="{% static 'js/config/config.js' %}"></script>
   <script src="{% static 'js/components/CardList.js' %}"></script>
