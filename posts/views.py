@@ -225,13 +225,7 @@ def shoplist(request):
 
 @decorators.login_required
 def shoppinglist(request):
-    shop = ShoppingList.objects.filter(user=request.user)
-    
-    #shop = Recipe.objects.filter(purchases=request.recipe)
-    #paginator = Paginator(shop, 10)
-    #page_number = request.GET.get("page")
-    #page = paginator.get_page(page_number)
+    shop = ShoppingList.objects.select_related('recipe').filter(
+    user=request.user)
     return render(request, 'shoplist1.html', {"shop": shop})
-
-
 

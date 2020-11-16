@@ -7,43 +7,32 @@
     <link rel="stylesheet" href="{% static '/pages/shopList.css' %}">
 {% endblock %}
 
-{% csrf_token %}
 {% block content %}
-<!doctype html>
-<html lang="en">
-
-<body class="body">
-
 <main class="main container">
     <div class="main__header">
         <h1 class="main__title">Список покупок</h1>
-        
-    
-       
     </div>
     <div class="card-list card-list_column">
+        {% csrf_token %}
         <ul class="shopping-list">
-            <li class="shopping-list__item" data-id="111">
+            {% for recipe in shop %}
+            <li class="shopping-list__item" data-id="{{recipe.recipe.id}}">
                 <div class="recipe recipe_reverse">
-                    {% for recipe in shop %}
-                    {% load thumbnail %}
-                    <li class="shopping-list__item" data-id="{{ recipe.pk }}">
-                        <div class="recipe recipe_reverse">
-                            {% thumbnail recipe.image "250x250" crop="center" upscale=True as im %}
-                            <a href="{% url 'recipe' recipe.author.username recipe.id %}" class="link"><img src="{{ im.url }}" alt="какой-то текст" class="recipe__image recipe__image_big"></a>
-                            {% endthumbnail %}
-                            <a href="{% url 'recipe' recipe.author.username recipe.id %}" class="link"><h3 class="recipe__title">{{ recipe.title }}</h3></a>
-                            <p class="recipe__text"><span class="icon-time"></span>{{ recipe.cooking_time }} мин. </p>
-                        </div>
-                        <a href="#" class="shopping-list__button link"> Удалить </a>
-                    </li>
-                {% endfor %}   >
-            
+
+                    <img src="{{ recipe.recipe.image.url }}" alt="какой-то текст" class="recipe__image recipe__image_big">
+                    <h3 class="recipe__title">{{ recipe.recipe.title }}</h3>
+                    <p class="recipe__text"><span class="icon-time"></span> {{ recipe.recipe.cooking_time }} мин.</p>
+                </div>
+                <a href="#" class="shopping-list__button link">Удалить</a> 
+            </li>
+        {% endfor %}
+
         </ul>
         <a href="#"><button class="button button_style_blue">Скачать список</button></a>
 
 
     </div>
+</main>
 
 <script src="{% static 'js/config/config.js' %}"></script>
 <script src="{% static '/js/components/ShopList.js' %}"></script>
