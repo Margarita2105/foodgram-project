@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %} {{ flatpage.title }} {% endblock %}
+    {% load static %}
+    {% csrf_token %}
+    {% block static %}
+    <link rel="stylesheet" href={% static 'pages/index.css' %}>
+    {% endblock %}
+    {% block index %} <li class="nav__item nav__item_active"> {% endblock %}
+    {% load user_filters %}
+
+    {% block content %}
+    <main class="main container">
+ <div class="container">
+        <h1>{{ flatpage.title }}</h1>
+        {{ flatpage.content }}
+</div>
+    </main>
+
+    {% endblock %}

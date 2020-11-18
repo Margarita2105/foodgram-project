@@ -6,7 +6,9 @@
 {% block static %}
     <link rel="stylesheet" href="{% static '/pages/shopList.css' %}">
 {% endblock %}
-
+{% block nav %}
+    {% include "nav.html" with purchases=True %}
+{% endblock %}
 {% block content %}
 <main class="main container">
     <div class="main__header">
@@ -28,7 +30,7 @@
         {% endfor %}
 
         </ul>
-        <a href="#"><button class="button button_style_blue">Скачать список</button></a>
+        <a href="{% url 'download_card' %}"><button class="button button_style_blue">Скачать список</button></a>
 
 
     </div>

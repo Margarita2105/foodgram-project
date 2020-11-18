@@ -7,7 +7,9 @@
 {% block title %}
     {{ recipe.title }}
 {% endblock %}
-
+{% block nav %}
+    {% include "nav.html"%}
+{% endblock %}
 {% block content %}
         <div class="single-card" data-id="{{ recipe.pk }}" data-author="{{ recipe.author.pk }}">
             <img src="{% if recipe.image %}{{ recipe.image.url }}{% endif %}" alt="какой-то текст" class="single-card__image">
@@ -39,7 +41,9 @@
                 </div>
                 <ul class="single-card__items">
                     <li class="single-card__item"><button class="button button_style_blue" name="purchases" data-out><span class="icon-plus"></span> Добавить в покупки</button></li>
+                {% if follow_button %}
                     <li class="single-card__item"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></li>
+                {% endif %}
                 </ul>
                 <div class="single-card__section">
                     <h3 class="single-card__section-title">Ингридиенты:</h3>

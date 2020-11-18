@@ -25,7 +25,7 @@ def is_favorite(recipe, user):
 
 
 @register.filter(name='is_shoplist')
-def shoplist(recipe, user):
+def is_shoplist(recipe, user):
     if not user.is_authenticated:
         return False
     return ShoppingList.objects.filter(user=user, recipe=recipe).exists()

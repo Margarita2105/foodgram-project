@@ -52,11 +52,11 @@ class Follow_User(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
     
     def __str__(self):
-        return self.user
+        return f'follower - {self.user} following - {self.author}'
 
 class Follow_Recipe(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="follower_recipe")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following_recipe")
     
     def __str__(self):
-        return self.recipe
+        return f'follower - {self.user} following recipe- {self.recipe}'

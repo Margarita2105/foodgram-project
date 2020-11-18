@@ -20,7 +20,7 @@
         </ul>
         <div class="card__items card__items_column">
             <p class="card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин.</p>
-            <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' recipe.author %}" style="color: black">{{ recipe.author }}</a></p>
+            <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' recipe.author.username %}" style="color: black">{{ recipe.author }}</a></p>
         </div>
     </div>
     <div class="card__footer">
@@ -32,15 +32,14 @@
             <button class="button button_style_light-blue" name="purchases" data-out><span class="icon-plus button__icon"></span> Добавить в покупки </button>
         {% endif %}
         {% if recipe|is_favorite:user %}
-            <button class="button button_style_none" name="favorites"><span class="icon-favorite icon-favorite_active"></span></button>
+            <button class="button .icon-favorite_active" name="favorites"><span class="icon-favorite icon-favorite_active"></span></button>
         {% else %}
             <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
         {% endif %}
 {% else %}
-<form action="{% url 'login' %}" >
-    <button class="button button_style_light-blue" ><span class="icon-plus button__icon"></span> Добавить в покупки </button>
-    <button class="button button_style_none" name="favorites" ><span class="icon-favorite"></span></button>
-<form>
+<form action="{% url 'login' %}" ></form>
+<button class="button button_style_light-blue" ><span class="icon-plus button__icon"></span> Добавить в покупки </button>
+<button class="button button_style_none" name="favorites" ><span class="icon-favorite"></span></button>
 {% endif %}
     </div>
 </div>

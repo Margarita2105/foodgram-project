@@ -7,15 +7,14 @@
 {% endblock %}
 
 
-<script type="text/javascript">
-// using jQuery
-var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-</script>
+{% block nav %}
+    {% include "nav.html" %}
+{% endblock %}
 
 {% block content %}
 
         <div class="main__header">
-            <h1 class="main__title">Рецепты {{ post_author.get_full_name }}</h1>
+            <h1 class="main__title">Рецепты {{ post_author }}</h1>
             <ul class="tags">
                 <li class="tags__item">
                 {% if food_time == "breakfest" %}
@@ -47,19 +46,20 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
     </div>
     
                
-        <div class="author-subscribe" data-author="{{ author.pk }}">
-            <p class="card__text">публикаций: {{ recipe_count }}</p>
-             <p class="card__text">подписчиков: {{ followers_count }}</p>
+        <div class="author-subscribe" data-author="{{ post_author.pk }}">
+
             <p></p>
             {% csrf_token %}
-        {% if user.is_authenticated and not user == author%}    
-            {% if author|is_follow:user %}
+        {% if follow_button %}
+            {% if user.is_authenticated and not user == author%}    
+                {% if author|is_follow:user %}
             
-                <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe">Отписаться от автора</button></p>
-            {% else %}
+                    <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe">Отписаться от автора</button></p>
+                {% else %}
                 <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></p>
+                {% endif %}
             {% endif %}
-         {% endif %}
+        {% endif %}
                 </div>
                 <div class="card-list" >         
         {% for recipe in page %}
@@ -69,18 +69,18 @@ var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
     {% if page.has_other_pages %}
         {% include "paginator.html" with items=page paginator=paginator%}
     {% endif %}
-  <script src="{% static 'js/components/MainCards.js' %}"></script>
 
-  <script src="{% static 'js/components/Purchases.js' %}"></script>
-  <script src="{% static 'js/components/Favorites.js' %}"></script>
-  <script src="{% static 'js/components/Subscribe.js' %}"></script>
+  <script src="{% static '/js/components/MainCards.js' %}"></script>
 
-  <script src="{% static 'js/config/config.js' %}"></script>
-  <script src="{% static 'js/components/CardList.js' %}"></script>
-  <script src="{% static 'js/components/Header.js' %}"></script>
+  <script src="{% static '/js/components/Purchases.js' %}"></script>
+  <script src="{% static '/js/components/Favorites.js' %}"></script>
+  <script src="{% static '/js/components/Subscribe.js' %}"></script>
 
-  <script src="{% static 'js/api/Api.js' %}"></script>
-  <script src="{% static 'indexAuth.js' %}"></script>
+  <script src="{% static '/js/config/config.js' %}"></script>
+  <script src="{% static '/js/components/AuthorRecipe.js' %}"></script>
+  <script src="{% static '/js/components/Header.js' %}"></script>
 
+  <script src="{% static '/js/api/Api.js' %}"></script>
+  <script src="{% static 'authorRecipe.js' %}"></script>
 
 {% endblock %}

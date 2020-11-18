@@ -5,11 +5,9 @@
     <link rel="stylesheet" href="{% static '/pages/index.css' %}">
 {% endblock %}
 
-{% csrf_token %}
-<script type="text/javascript">
-// using jQuery
-var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-</script>
+{% block nav %}
+    {% include "nav.html" with index=True %}
+{% endblock %}
 
 {% block content %}
         <div class="main__header">

@@ -18,23 +18,22 @@ from django.urls import include, path
 from django.conf.urls.static import static
 from . import settings
 from django.conf import settings
+from django.contrib.flatpages import views
 
 urlpatterns = [
-    #  регистрация и авторизация
-    path("auth/", include("users.urls")),
-
-    #  если нужного шаблона для /auth не нашлось в файле users.urls — 
-    #  ищем совпадения в файле django.contrib.auth.urls
-    path("auth/", include("django.contrib.auth.urls")),
+    path('about/', include('django.contrib.flatpages.urls')),
     path('admin/', admin.site.urls),
+    path("auth/", include("users.urls")),
+    path("auth/", include("django.contrib.auth.urls")),
     path("api/", include('api.urls')),
 
 ]
 urlpatterns += [
-
-    #path('api/', include('api.urls')),
+    path('about-author/', views.flatpage,
+         {'url': '/about-author/'}, name='about-author'),
+    path('about-spec/', views.flatpage,
+         {'url': '/about-spec/'}, name='about-spec'),
     path('', include('posts.urls')),
-    
 ]
 
 if settings.DEBUG:

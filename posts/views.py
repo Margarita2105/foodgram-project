@@ -1,9 +1,11 @@
+import json
+import csv
+
 from django.contrib.auth import get_user_model, decorators
-# Create your views here.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-#from django.views.decorators.cache import cache_page
+from django.http import JsonResponse, HttpResponse
 
 from .forms import RecipeForm
 from .models import Ingredient, Recipe, RecipeIngredient, ShoppingList, Follow_User, Follow_Recipe
@@ -12,8 +14,6 @@ from .utils import IngredientsValid, food_time_f
 User = get_user_model()
 
 def ingredients(request):
-    import json
-    from django.http import HttpResponse
     with open('ingredients.json', 'r', encoding='utf-8') as fh:
         data = json.load(fh)
     for i in data:
@@ -46,7 +46,9 @@ def recipe_view(request, username, recipe_id):
     author = get_object_or_404(User, username=username)
     recipe = get_object_or_404(Recipe, pk=recipe_id, author=author)
     inrgedients = RecipeIngredient.objects.filter(recipe_id=recipe.pk)
-    return render(request, 'singlePage.html', {'recipe':recipe, 'username':author, 'ingredients':inrgedients})
+    can_follow = request.user.is_authenticated and request.user != author
+    return render(request, 'singlePage.html', {'recipe':recipe,
+        'username':author, 'ingredients':inrgedients, 'follow_button': can_follow})
 
 def get_ingredients(request):
     ingredients = {}
@@ -60,29 +62,27 @@ def get_ingredients(request):
 
 @login_required
 def new_post(request):
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
+
     if request.method == 'POST':
-        author = request.user
         ingredients = get_ingredients(request)
-        form = RecipeForm(request.POST or None, files=request.FILES or None, )
         if not ingredients:
             form.add_error(None, 'Добавьте ингредиенты')
-            
-        elif form.is_valid():
-            form.instance.author = author
-            recipe = form.save(commit=False)
-            recipe.save()
-            data = ingredients.items()
-            for pk, rt in data:
-                ingredient_obj = get_object_or_404(Ingredient, title=pk)
-                ingredient_recipe = RecipeIngredient(ingredient=ingredient_obj, recipe=recipe, qty=rt)#data[pk])
-                ingredient_recipe.save()
-            form.save_m2m()
-            del ingredients
-            return redirect('index')
-        #del ingredients
-        return render(request, 'formRecipe.html', {'form':form})
-    form = RecipeForm()
-    return render(request, 'formRecipe.html', {'form':form})
+
+    if form.is_valid():
+        form.instance.author = request.user
+        recipe = form.save(commit=False)
+        recipe.save()
+        data = ingredients.items()
+        for pk, am in data:
+            ingredient_obj = get_object_or_404(Ingredient, title=pk)
+            ingredient_recipe = RecipeIngredient(
+                ingredient=ingredient_obj, recipe=recipe, qty=am)
+            ingredient_recipe.save()
+        form.save_m2m()
+        return redirect('index')
+
+    return render(request, 'new.html', {'form': form})
 
 def profile(request, username):
     food = {
@@ -101,41 +101,47 @@ def profile(request, username):
         breakfest__in=food['breakfest'],
         lunch__in=food['lunch'],
         dinner__in=food['dinner'])
+    can_follow = request.user.is_authenticated and request.user != post_author
     paginator = Paginator(recipe_list, 5)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
-    return render(request,"profile.html", {"post_author": post_author, "paginator": paginator,"page": page, 'food_time':food_time}) 
+    return render(request,"profile.html", {"post_author": post_author,
+        "paginator": paginator,"page": page, 'food_time':food_time, 'follow_button': can_follow}) 
 
 
 @login_required
 def post_edit(request, username, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
+    recipe = get_object_or_404(Recipe, id=recipe_id, author__username=username)
+    ingredients_objs = RecipeIngredient.objects.filter(recipe=recipe)
 
-    if request.user != recipe.author:
-        return redirect('index')
-
-    if request.method == "POST":
-        form = RecipeForm(request.POST or None,
-                          files=request.FILES or None, instance=recipe)
-        ingredients = get_ingredients(request)
-        if form.is_valid():
-            RecipeIngredient.objects.filter(recipe=recipe).delete()
-            recipe = form.save(commit=False)
-            recipe.author = request.user
-            recipe.save()
-            for item in ingredients:
-                RecipeIngredient.objects.create(
-                    qty=ingredients[item],
-                    ingredient=Ingredient.objects.get(title=f'{item}'),
-                    recipe=recipe)
-            form.save_m2m()
-            return redirect('index')
+    if request.user != recipe.author and not request.user.is_superuser:
+        return redirect('recipe', username=username, recipe_id=recipe_id)
 
     form = RecipeForm(request.POST or None,
                       files=request.FILES or None, instance=recipe)
 
-    return render(request, 'new.html',
-                  {'form': form, 'recipe': recipe, })
+    if request.method == "POST":
+        ingredients = get_ingredients(request)
+        form = RecipeForm(request.POST or None,
+                          files=request.FILES or None, instance=recipe)
+        
+        if form.is_valid():
+            recipe = form.save(commit=False)
+            recipe.save()
+            RecipeIngredient.objects.filter(recipe=recipe).delete()
+            
+            data = ingredients.items()
+            for pk in data:
+                ingredient_obj = get_object_or_404(Ingredient, title=pk[0])
+                ingredient_recipe = RecipeIngredient(
+                    ingredient=ingredient_obj, recipe=recipe, qty=pk[1])
+                ingredient_recipe.save()
+        form.save_m2m()
+        return redirect('index')
+
+    return render(request, 'formChangeRecipe.html',
+                  {'form': form, 'recipe_obj': recipe, 'ingredients_objs': ingredients_objs})
+
 
 
 @login_required
@@ -151,7 +157,7 @@ def recipe_delete(request, username, recipe_id):
         return render(request, 'DelRecipe.html', {
             'recipe_id': recipe_id,
             'username': username,
-            'recipe_obj': recipe_obj})
+            'recipe_obj': recipe})
 
 
 def page_not_found(request, exception):
@@ -164,13 +170,18 @@ def server_error(request):
 
 @login_required
 def follow_index(request):
-    follow = Follow_User.objects.filter(user=request.user).values_list("author_id", flat=True)
-    count = Follow_User.objects.filter(user=request.user).count()
-    recipe_list = Recipe.objects.filter(author_id__in=follow).order_by("-pub_date").all()
-    paginator = Paginator(recipe_list, 10)
-    page_number = request.GET.get("page")
+    author_list = Follow_User.objects.filter(
+        user__id=request.user.id).all()
+    for i in author_list:
+        print(i.author)
+    paginator = Paginator(author_list, 6)
+    page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    return render(request, "follow1.html", {"page": page, "paginator": paginator, "count": count})
+    return render(
+        request,
+        'follow1.html',
+        {'page': page, 'paginator': paginator, 'author': author_list}
+    )
 
 
 @login_required
@@ -183,55 +194,9 @@ def follow_recipe_index(request):
     paginator = Paginator(recipe, 10)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
+
     return render(request, "follow.html", {"page": page, "paginator": paginator, "count": count, "food_time": food_time})
 
-
-@login_required
-def profile_follow(request, username):
-    author = get_object_or_404(User, username=username)
-    follow = Follow_User.objects.filter(user=request.user, author=author)
-    if not follow.exists() and author != request.user:
-        Follow_User.objects.create(user=request.user, author=author)
-    return redirect(follow_index)
-
-
-@login_required
-def profile_unfollow(request, username):
-    post_author = get_object_or_404(User, username=username)
-    Follow_User.objects.filter(user=request.user, author=post_author).delete()
-    return redirect(profile, username)
-
-@login_required
-def recipe_follow(request, recipe):
-    recipe = get_object_or_404(Recipe, recipe=recipe)
-    follow = Follow_Recipe.objects.filter(user=request.user, recipe=recipe)
-    if not follow.exists() and author != request.user:
-        Follow_Recipe.objects.create(user=request.user, recipe=recipe)
-    return redirect(follow_index)
-
-
-@login_required
-def recipe_unfollow(request, username):
-    recipe = get_object_or_404(Recipe, recipe=recipe)
-    Follow_Recipe.objects.filter(user=request.user, author=post_author).delete()
-    return redirect(profile, username)
-
-def shoplist(request):
-    shop = get_object_or_404(User, username=request.user.username)
-    rein = shop.purchaser.all()
-    inglist = {}
-    for ing in rein:
-        for j in recipe.recipeingredient_set.all():
-            name = j.ingredient.title
-            dim = j.ingredient.dimension
-            am = {}
-            if name in inglist.keys():
-                inglist[name][dim] += j.qty
-            else:
-                am[dim] = j.qty
-            inglist[name] = am.copy()
-    print(inglist)
-    return inglist  
 
 @decorators.login_required
 def shoppinglist(request):
@@ -239,3 +204,30 @@ def shoppinglist(request):
     user=request.user)
     return render(request, 'shoplist1.html', {"shop": shop})
 
+
+def shoplist(request):
+    recipes = Recipe.objects.filter(purchases__user=request.user)
+
+    ingredients_needed: dict = {}
+
+    for recipe in recipes:
+        ingredients = recipe.ingredients.values_list('title', 'dimension')
+        content = recipe.recipe_ingredients.values_list('qty', flat=True)
+
+        for num in range(len(ingredients)):
+            title: str = ingredients[num][0]
+            dimension: str = ingredients[num][1]
+            quantity: int = content[num]
+
+            if title in ingredients_needed.keys():
+                ingredients_needed[title] = [ingredients_needed[title][0] + quantity, dimension]
+            else:
+                ingredients_needed[title] = [quantity, dimension]
+
+    response = HttpResponse(content_type='txt/csv')
+    writer = csv.writer(response)
+
+    for key, value in ingredients_needed.items():
+        writer.writerow([f'{key} ({value[1]}) - {value[0]}'])
+
+    return response
