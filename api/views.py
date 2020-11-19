@@ -25,7 +25,7 @@ class IngredientListView(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 @login_required
 @require_http_methods(['POST', 'DELETE'])
-def Follow_UserView(request, author_id):
+def follow_user(request, author_id):
 
     if request.method == 'POST':
         author_id = json.loads(request.body).get('id')
@@ -46,7 +46,7 @@ def Follow_UserView(request, author_id):
 
 @login_required
 @require_http_methods(['POST', 'DELETE'])
-def Follow_RecipeView(request, recipe_id):
+def follow_recipe(request, recipe_id):
 
     if request.method == 'POST':
         recipe_id = json.loads(request.body).get('id')
@@ -65,7 +65,7 @@ def Follow_RecipeView(request, recipe_id):
 
 @login_required
 @require_http_methods(['POST', 'DELETE'])
-def ShoppingListView(request, recipe_id):
+def shopping_list(request, recipe_id):
 
     if request.method == 'POST':
         recipe_id = json.loads(request.body).get('id')

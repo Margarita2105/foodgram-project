@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponse
 
 from .forms import RecipeForm
 from .models import Ingredient, Recipe, RecipeIngredient, ShoppingList, Follow_User, Follow_Recipe
-from .utils import IngredientsValid, food_time_f
+from .utils import food_time_f
 
 User = get_user_model()
 
@@ -42,6 +42,7 @@ def index(request):
     page = paginator.get_page(page_number)
     return render(request, "index.html", {"page": page, "paginator": paginator, 'food_time':food_time})
 
+
 def recipe_view(request, username, recipe_id):
     author = get_object_or_404(User, username=username)
     recipe = get_object_or_404(Recipe, pk=recipe_id, author=author)
@@ -49,6 +50,7 @@ def recipe_view(request, username, recipe_id):
     can_follow = request.user.is_authenticated and request.user != author
     return render(request, 'singlePage.html', {'recipe':recipe,
         'username':author, 'ingredients':inrgedients, 'follow_button': can_follow})
+
 
 def get_ingredients(request):
     ingredients = {}
@@ -60,29 +62,34 @@ def get_ingredients(request):
             )
     return ingredients
 
+
 @login_required
 def new_post(request):
-    form = RecipeForm(request.POST or None, files=request.FILES or None)
-
     if request.method == 'POST':
-        ingredients = get_ingredients(request)
-        if not ingredients:
-            form.add_error(None, 'Добавьте ингредиенты')
+        form = RecipeForm(request.POST or None, files=request.FILES or None)
 
-    if form.is_valid():
-        form.instance.author = request.user
-        recipe = form.save(commit=False)
-        recipe.save()
-        data = ingredients.items()
-        for pk, am in data:
-            ingredient_obj = get_object_or_404(Ingredient, title=pk)
-            ingredient_recipe = RecipeIngredient(
-                ingredient=ingredient_obj, recipe=recipe, qty=am)
-            ingredient_recipe.save()
-        form.save_m2m()
-        return redirect('index')
+        if form.is_valid():
+            form.instance.author = request.user
+            recipe = form.save(commit=False)
+            recipe.save()
 
+            ingredients = get_ingredients(request)
+            if not ingredients:
+                form.add_error(None, 'Добавьте ингредиенты')
+            data = ingredients.items()
+
+            for pk, am in data:
+                ingredient_obj = get_object_or_404(Ingredient, title=pk)
+                ingredient_recipe = RecipeIngredient(
+                    ingredient=ingredient_obj, recipe=recipe, qty=am)
+                ingredient_recipe.save()
+
+            form.save_m2m()
+
+            return redirect('index')
+    form = RecipeForm()
     return render(request, 'new.html', {'form': form})
+
 
 def profile(request, username):
     food = {
@@ -143,7 +150,6 @@ def post_edit(request, username, recipe_id):
                   {'form': form, 'recipe_obj': recipe, 'ingredients_objs': ingredients_objs})
 
 
-
 @login_required
 def recipe_delete(request, username, recipe_id):
     recipe = get_object_or_404(
@@ -172,11 +178,10 @@ def server_error(request):
 def follow_index(request):
     author_list = Follow_User.objects.filter(
         user__id=request.user.id).all()
-    for i in author_list:
-        print(i.author)
     paginator = Paginator(author_list, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
+
     return render(
         request,
         'follow1.html',
@@ -202,6 +207,7 @@ def follow_recipe_index(request):
 def shoppinglist(request):
     shop = ShoppingList.objects.select_related('recipe').filter(
     user=request.user)
+    
     return render(request, 'shoplist1.html', {"shop": shop})
 
 

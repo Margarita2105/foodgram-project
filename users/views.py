@@ -8,14 +8,5 @@ from django.core.mail import send_mail
 
 class SignUp(CreateView):
     form_class = CreationForm
-    success_url = reverse_lazy("login") #  где login — это параметр "name" в path()
+    success_url = reverse_lazy("login")
     template_name = "reg1.html"
-    
-
-#send_mail(
-#        'Тема письма',
-#        'Текст письма.',
-#        'from@example.com',  # Это поле От:
-#        ['to@example.com'],  # Это поле Кому:
-#        fail_silently=False, # сообщать об ошибках
-#)
