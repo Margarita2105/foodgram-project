@@ -16,10 +16,12 @@ User = get_user_model()
 def ingredients(request):
     with open('ingredients.json', 'r', encoding='utf-8') as fh:
         data = json.load(fh)
-    for i in data:
-        print('Новый ингридиент:',i)
-        ingredient = Ingredient(title=i['title'], dimension=i['dimension'])
-        ingredient.save()
+    ingr = Ingredient.objects.all()
+    if not ingr:
+        for i in data:
+            print('Новый ингридиент:',i)
+            ingredient = Ingredient(title=i['title'], dimension=i['dimension'])
+            ingredient.save()
     return HttpResponse('\n'.join(str(data)))
 
 
