@@ -37,8 +37,6 @@ services:
       - 80:80
     depends_on:
       - web
-    #links:
-    #  - web
     environment: 
       - NGINX_HOST=127.0.0.1 
       - NGINX_PORT=80
